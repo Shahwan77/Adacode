@@ -1,30 +1,14 @@
-import 'package:adacode/Routes/App_Routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../../../Routes/App_Routes.dart';
 import '../../../Widgets/app_bar/appbar.dart';
+import 'Controller/ChatController.dart';
 
-class ChatScreen extends StatefulWidget {
-  @override
-  _ChatScreenState createState() => _ChatScreenState();
-}
-
-class _ChatScreenState extends State<ChatScreen> {
-  final TextEditingController _controller = TextEditingController();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  void _sendMessage() {
-    String messageText = _controller.text.trim();
-    if (messageText.isNotEmpty) {
-      _firestore.collection('messages').add({
-        'text': messageText,
-        'createdAt': Timestamp.now(),
-      });
-      _controller.clear();
-    }
-  }
+class ChatScreen extends StatelessWidget {
+  final ChatController chatController = Get.put(ChatController());
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +28,12 @@ class _ChatScreenState extends State<ChatScreen> {
               children: [
                 Padding(
                   padding: EdgeInsets.only(right: 10.w),
-                  child: GestureDetector(onTap: () {
-                    Get.toNamed(AppRoutes.Profile);
-                  },
-                      child: Icon(Icons.settings_outlined)),
+                  child: GestureDetector(
+                    onTap: () {
+                      Get.toNamed(AppRoutes.Profile);
+                    },
+                    child: Icon(Icons.settings_outlined),
+                  ),
                 )
               ],
             ),
@@ -56,10 +42,7 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Padding(
               padding: EdgeInsets.all(10.h),
               child: StreamBuilder(
-                stream: _firestore
-                    .collection('messages')
-                    .orderBy('createdAt', descending: true)
-                    .snapshots(),
+                stream: chatController.getMessagesStream(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
@@ -116,7 +99,7 @@ class _ChatScreenState extends State<ChatScreen> {
               children: <Widget>[
                 Expanded(
                   child: TextField(
-                    controller: _controller,
+                    controller: chatController.controller,
                     decoration: InputDecoration(
                       hintText: 'Enter your message...',
                     ),
@@ -124,7 +107,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 IconButton(
                   icon: Icon(Icons.send),
-                  onPressed: _sendMessage,
+                  onPressed: chatController.sendMessage,
                 ),
               ],
             ),

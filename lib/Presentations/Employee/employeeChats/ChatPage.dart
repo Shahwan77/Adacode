@@ -5,26 +5,10 @@ import 'package:get/get.dart';
 
 import '../../../Widgets/app_bar/appbar.dart';
 import '../../../core/utils/dimensions.dart';
+import 'Controller/ChatController.dart';
 
-class employeeChatScreen   extends StatefulWidget {
-  @override
-  _employeeChatScreenState createState() => _employeeChatScreenState();
-}
-
-class _employeeChatScreenState extends State<employeeChatScreen  > {
-  final TextEditingController _controller = TextEditingController();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  void _sendMessage() {
-    String messageText = _controller.text.trim();
-    if (messageText.isNotEmpty) {
-      _firestore.collection('messages').add({
-        'text': messageText,
-        'createdAt': Timestamp.now(),
-      });
-      _controller.clear();
-    }
-  }
+class employeeChatScreen extends StatelessWidget {
+  final employeeChatController chatController = Get.put(employeeChatController());
 
   @override
   Widget build(BuildContext context) {
@@ -45,10 +29,7 @@ class _employeeChatScreenState extends State<employeeChatScreen  > {
             child: Padding(
               padding: EdgeInsets.all(12.h),
               child: StreamBuilder(
-                stream: _firestore
-                    .collection('messages')
-                    .orderBy('createdAt', descending: true)
-                    .snapshots(),
+                stream: chatController.getMessagesStream(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
@@ -108,7 +89,7 @@ class _employeeChatScreenState extends State<employeeChatScreen  > {
               children: <Widget>[
                 Expanded(
                   child: TextField(
-                    controller: _controller,
+                    controller: chatController.controller,
                     enabled: false, // Make the TextField non-editable
                     decoration: InputDecoration(
                       hintText: 'Only Admin can send message',
@@ -117,7 +98,7 @@ class _employeeChatScreenState extends State<employeeChatScreen  > {
                 ),
                 IconButton(
                   icon: Icon(Icons.send),
-                  onPressed: _sendMessage,
+                  onPressed: chatController.sendMessage,
                 ),
               ],
             ),
