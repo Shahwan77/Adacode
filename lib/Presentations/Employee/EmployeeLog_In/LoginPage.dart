@@ -65,7 +65,7 @@ class employeeLoginPage extends StatelessWidget {
                               color: Colors.green,
                             )
                           : null,
-                      lbtxt: 'Emailss',
+                      lbtxt: 'Email',
                       fcsclr: Colors.black,
                       bdrds: 10,
                       isValid: loginController.isEmailValid.value,
